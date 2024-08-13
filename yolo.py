@@ -3,13 +3,29 @@ from ultralytics import YOLO
 
 model = YOLO('yolov8x.pt')
 
+
+food_items = {
+    "banana", "apple", "orange", "carrot", "broccoli", "cake", "sandwich", 
+    "hot dog", "pizza", "donut", "banana", "carrot", "broccoli", "spoon", 
+    "fork", "knife", "bottle", "cup", "wine glass", "bowl", "spoon", 
+    "bread", "cake", "cookie", "cucumber", "egg", "garlic", "grape", 
+    "lemon", "lime", "onion", "pear", "pepper", "plum", "potato", 
+    "pumpkin", "strawberry", "tomato", "watermelon", "pineapple", 
+    "kiwi", "mango", "pear", "peach", "avocado", "cabbage", "lettuce",
+    "meat", "fish", "chicken", "beef", "pork", "bacon", "sausage",
+    "rice", "pasta", "noodles", "cheese", "butter", "yogurt", "milk",
+    "cream", "chocolate", "coffee", "tea", "sugar", "salt", "pepper",
+    "spices", "honey", "jam", "syrup", "flour", "oil", "vinegar"
+}
+
 def detect_ingredients(image_path):
     results = model(image_path)
     detected_ingr = set()
     for result in results:
-        for label, conf in zip(result.boxes.cls, result.boxes.conf):
+        for label in result.boxes.cls:
             ingredient = result.names[int(label)]
-            detected_ingr.add(ingredient)
+            if ingredient.lower() in food_items:
+                detected_ingr.add(ingredient)
     return list(detected_ingr)
 
 def get_recipes_by_ingr(ingr):
