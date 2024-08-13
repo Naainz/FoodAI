@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Upload an Image to Detect Ingredients</h1>
+<form method="POST" enctype="multipart/form-data" action="{{ url_for('yolo') }}">
+    <label for="image">Select an image:</label>
+    <input type="file" id="image" name="image" required>
+    <button type="submit">Upload and Detect</button>
+</form>
+
+{% if ingredients %}
+    <h2>Detected Ingredients:</h2>
+    <ul>
+        {% for ingr in ingredients %}
+        <li>{{ ingr }}</li>
+        {% endfor %}
+    </ul>
+    
+    <h2>Recipes Generated:</h2>
+    <ul>
+        {% for meal, percentage in recipes.items() %}
+        <li>{{ meal }}: {{ percentage }}%</li>
+        {% endfor %}
+    </ul>
+    
+    <h2>Processed Image:</h2>
+    <img src="{{ url_for('static', filename='yolo/' + image_url.split('/')[-1]) }}" alt="Processed Image">
+{% endif %}
+{% endblock %}
