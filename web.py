@@ -200,13 +200,13 @@ def plan():
 
         bmr = calculate_bmr(age, height, weight, gender)
         daily_calories = calculate_daily_calories(bmr, goal, activity_level)
-        target_calories = daily_calories * 0.9  
+        target_calories = int(daily_calories * 0.9)  # Convert to int
 
         meal_plan = {
             "breakfast": "Breakfast",
             "lunch": "Lunch",
             "dinner": "Dinner",
-            "snack": "Dessert"  
+            "snack": "Dessert"
         }
 
         total_calories = 0
@@ -215,7 +215,7 @@ def plan():
         for meal, category in meal_plan.items():
             meal_details = attempt_get_meal(category)
             if meal_details:
-                calories = simulate_calories(meal_details)
+                calories = int(simulate_calories(meal_details))  # Convert to int
                 total_calories += calories
                 meal_details_list.append((meal, meal_details['strMeal'], calories))
             else:
@@ -228,7 +228,7 @@ def plan():
                 excess_calories -= calories
                 total_calories -= calories
 
-        return render_template('plan.html', meal_details_list=meal_details_list, total_calories=total_calories, target_calories=target_calories)
+        return render_template('plan.html', meal_details_list=meal_details_list, total_calories=int(total_calories), target_calories=target_calories)
 
     return render_template('plan.html')
 
