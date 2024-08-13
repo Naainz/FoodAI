@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Get Recipe Details</h1>
+<form method="POST" action="{{ url_for('recipe') }}">
+    <label for="recipe_name">Enter Recipe Name:</label>
+    <input type="text" id="recipe_name" name="recipe_name" required>
+    <button type="submit">Get Recipe</button>
+</form>
+
+{% if ingredients is defined %}
+    <h2>Recipe for '{{ recipe_name }}'</h2>
+    <p>Ingredients:</p>
+    <ul>
+        {% for ingredient in ingredients %}
+        <li>{{ ingredient }}</li>
+        {% endfor %}
+    </ul>
+    <p>Instructions:</p>
+    <p>{{ instructions }}</p>
+{% endif %}
+{% endblock %}

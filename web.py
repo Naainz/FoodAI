@@ -126,6 +126,19 @@ def attempt_get_meal(category, retries=5, fallback_to_random=True):
     print(f"Failed to retrieve a meal for category: {category or 'Any'} after {retries} attempts.")
     return None
 
+def get_recipe_details(recipe_name):
+    url = "https://www.themealdb.com/api/json/v1/1/search.php"
+    params = {'s': recipe_name}
+    res = requests.get(url, params=params)
+    if res.status_code == 200:
+        data = res.json()
+        if 'meals' in data and data['meals']:
+            return data['meals'][0]
+        else:
+            return None
+    else:
+        return None
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -200,7 +213,7 @@ def plan():
 
         bmr = calculate_bmr(age, height, weight, gender)
         daily_calories = calculate_daily_calories(bmr, goal, activity_level)
-        target_calories = int(daily_calories * 0.9)  # Convert to int
+        target_calories = int(daily_calories * 0.9)  
 
         meal_plan = {
             "breakfast": "Breakfast",
@@ -215,7 +228,7 @@ def plan():
         for meal, category in meal_plan.items():
             meal_details = attempt_get_meal(category)
             if meal_details:
-                calories = int(simulate_calories(meal_details))  # Convert to int
+                calories = int(simulate_calories(meal_details))  
                 total_calories += calories
                 meal_details_list.append((meal, meal_details['strMeal'], calories))
             else:
@@ -231,6 +244,24 @@ def plan():
         return render_template('plan.html', meal_details_list=meal_details_list, total_calories=int(total_calories), target_calories=target_calories)
 
     return render_template('plan.html')
+
+@app.route('/recipe', methods=['GET', 'POST'])
+def recipe():
+    if request.method == 'POST':
+        recipe_name = request.form.get('recipe_name').strip()
+        recipe_details = get_recipe_details(recipe_name)
+        if recipe_details:
+            ingredients = [
+                f"{recipe_details[f'strIngredient{i}']} ({recipe_details[f'strMeasure{i}']})"
+                for i in range(1, 21)
+                if recipe_details[f'strIngredient{i}'] and recipe_details[f'strIngredient{i}'].strip()
+            ]
+            instructions = recipe_details['strInstructions']
+            return render_template('recipe.html', recipe_name=recipe_name, ingredients=ingredients, instructions=instructions)
+        else:
+            flash(f"No recipe found for '{recipe_name}'")
+            return redirect(request.url)
+    return render_template('recipe.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
