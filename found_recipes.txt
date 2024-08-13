@@ -1,3 +1,26 @@
-Available Ingredients [FOUND BY AI]: orange, banana, apple
+Available Ingredients: Egg
 
-Found Recipes (0):
+Found Recipes (23):
+- Beef Lo Mein [100%]
+- Blini Pancakes [100%]
+- Boxty Breakfast [100%]
+- Bread omelette [100%]
+- Chick-Fil-A Sandwich [100%]
+- Chivito uruguayo [100%]
+- Cream Cheese Tart [100%]
+- Flamiche [100%]
+- General Tso's Chicken [100%]
+- Katsu Chicken curry [100%]
+- Mince Pies [100%]
+- Moussaka [100%]
+- Nanaimo Bars [100%]
+- Pad See Ew [100%]
+- Parkin Cake [100%]
+- Paszteciki (Polish Pasties) [100%]
+- Peanut Butter Cookies [100%]
+- Salmon Eggs Eggs Benedict [100%]
+- Shrimp Chow Fun [100%]
+- Spring onion and prawn empanadas [100%]
+- Sweet and Sour Pork [100%]
+- Timbits [100%]
+- Tourtiere [100%]

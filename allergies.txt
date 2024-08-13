@@ -1,0 +1,33 @@
+Recipe: Beef Lo Mein
+Allergens: sesame
+
+Recipe: Blini Pancakes
+Allergens: wheat, milk
+
+Recipe: Boxty Breakfast
+Allergens: milk
+
+Recipe: Chick-Fil-A Sandwich
+Allergens: sesame, milk
+
+Recipe: Cream Cheese Tart
+Allergens: eggs, milk
+
+Recipe: General Tso's Chicken
+Allergens: sesame
+
+Recipe: Parkin Cake
+Allergens: milk
+
+Recipe: Paszteciki (Polish Pasties)
+Allergens: eggs
+
+Recipe: Salmon Eggs Eggs Benedict
+Allergens: eggs
+
+Recipe: Shrimp Chow Fun
+Allergens: sesame
+
+Recipe: Timbits
+Allergens: milk
+
