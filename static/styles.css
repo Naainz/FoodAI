@@ -1,0 +1,62 @@
+@import url('https://fonts.cdnfonts.com/css/satoshi');
+
+body {
+    font-family: 'Satoshi', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+nav {
+    background-color: #333;
+    padding: 10px;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+nav ul li {
+    margin-right: 10px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+.content {
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+form label {
+    margin-right: 10px;
+}
+
+form input[type="text"] {
+    padding: 5px;
+    margin-right: 10px;
+}
+
+form button {
+    padding: 5px 10px;
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #4cae4c;
+}

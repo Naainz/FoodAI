@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Generate Meals</h1>
+<form method="POST" action="{{ url_for('generate_meals') }}">
+    <label for="ingredients">Enter Ingredients (comma-separated):</label>
+    <input type="text" id="ingredients" name="ingredients" required>
+    <button type="submit">Generate Meals</button>
+</form>
+
+{% if recipes %}
+    <h2>Recipes Generated for: {{ ingredients }}</h2>
+    <ul>
+        {% for meal, percentage in recipes.items() %}
+        <li>{{ meal }}: {{ percentage }}%</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    {% if ingredients %}
+    <p>No recipes found with the given ingredients.</p>
+    {% endif %}
+{% endif %}
+{% endblock %}
