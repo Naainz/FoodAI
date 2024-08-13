@@ -1,5 +1,7 @@
+import os
 import requests
 from ultralytics import YOLO
+from PIL import Image
 
 model = YOLO('yolov8x.pt')
 
@@ -26,6 +28,18 @@ def detect_ingredients(image_path):
             ingredient = result.names[int(label)]
             if ingredient.lower() in food_items:
                 detected_ingr.add(ingredient)
+    
+    
+    base_name = os.path.basename(image_path)
+    name, _ = os.path.splitext(base_name)
+    save_path = f"yolo/{name}.jpg"
+    
+    
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    
+    
+    result.save(save_path)
+    
     return list(detected_ingr)
 
 def get_recipes_by_ingr(ingr):
