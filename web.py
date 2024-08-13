@@ -13,6 +13,11 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 model = YOLO('yolov8x.pt')
 
+common_allergens = {
+    "milk", "eggs", "fish", "shellfish", "tree nuts", "peanuts", 
+    "wheat", "soybeans", "gluten", "sesame"
+}
+
 food_items = {
     "banana", "apple", "orange", "carrot", "broccoli", "cake", "sandwich", 
     "hot dog", "pizza", "donut", "banana", "carrot", "broccoli", "spoon", 
@@ -76,6 +81,27 @@ def detect_ingredients(image_path):
     
     return list(detected_ingr), save_path
 
+def get_recipe_details(recipe_name):
+    url = "https://www.themealdb.com/api/json/v1/1/search.php"
+    params = {'s': recipe_name}
+    res = requests.get(url, params=params)
+    if res.status_code == 200:
+        data = res.json()
+        if 'meals' in data and data['meals']:
+            return data['meals'][0]
+        else:
+            return None
+    else:
+        return None
+
+def check_allergens(ingredients):
+    found_allergens = set()
+    for ingredient in ingredients:
+        for allergen in common_allergens:
+            if allergen.lower() in ingredient.lower():
+                found_allergens.add(allergen)
+    return found_allergens
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -109,6 +135,20 @@ def yolo():
             recipes = find_recipes(','.join(detected_ingr))
             return render_template('yolo.html', ingredients=detected_ingr, recipes=recipes, image_url=save_path)
     return render_template('yolo.html')
+
+@app.route('/allergy', methods=['GET', 'POST'])
+def allergy():
+    if request.method == 'POST':
+        recipe_name = request.form.get('recipe_name')
+        recipe_details = get_recipe_details(recipe_name)
+        if recipe_details:
+            ingredients = [recipe_details[f'strIngredient{i}'] for i in range(1, 21) if recipe_details[f'strIngredient{i}']]
+            allergens = check_allergens(ingredients)
+            return render_template('allergy.html', recipe_name=recipe_name, allergens=allergens)
+        else:
+            flash(f"No recipe found for '{recipe_name}'")
+            return redirect(request.url)
+    return render_template('allergy.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

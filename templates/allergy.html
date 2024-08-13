@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Check Allergens in a Recipe</h1>
+<form method="POST" action="{{ url_for('allergy') }}">
+    <label for="recipe_name">Enter Recipe Name:</label>
+    <input type="text" id="recipe_name" name="recipe_name" required>
+    <button type="submit">Check Allergens</button>
+</form>
+
+{% if allergens is not none %}
+    <h2>Allergens found in '{{ recipe_name }}':</h2>
+    {% if allergens %}
+        <ul>
+            {% for allergen in allergens %}
+            <li>{{ allergen }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No common allergens found.</p>
+    {% endif %}
+{% endif %}
+{% endblock %}
