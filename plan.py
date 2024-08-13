@@ -37,27 +37,18 @@ def calculate_daily_calories(bmr, goal, activity_level):
     else:
         raise ValueError("Goal must be 'gain', 'lose', or 'maintain'")
 
-def get_random_meal(category):
-    url = f"https://www.themealdb.com/api/json/v1/1/filter.php?c={category}"
+def get_meal_details(meal_name):
+    url = f"https://www.themealdb.com/api/json/v1/1/search.php?s={meal_name}"
     response = requests.get(url)
     if response.status_code == 200:
         meals = response.json().get('meals')
         if meals:
-            return random.choice(meals)
+            return meals[0]
         else:
-            print(f"No meals found for category: {category}")
+            print(f"No details found for meal: {meal_name}")
             return None
     else:
-        print(f"Failed to fetch meals for category: {category}. HTTP Status Code: {response.status_code}")
-        return None
-
-def get_meal_details(meal_id):
-    url = f"https://www.themealdb.com/api/json/v1/1/lookup.php?i={meal_id}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json().get('meals', [None])[0]
-    else:
-        print(f"Failed to fetch details for meal ID: {meal_id}. HTTP Status Code: {response.status_code}")
+        print(f"Failed to fetch details for meal name: {meal_name}. HTTP Status Code: {response.status_code}")
         return None
 
 def simulate_calories(meal_details):
@@ -75,6 +66,25 @@ def save_meal_to_file(meal_details, file_name):
                 file.write(f"- {ingredient} ({measure.strip()})\n")
         file.write("\nInstructions:\n")
         file.write(meal_details['strInstructions'])
+
+def attempt_get_meal(category, retries=3, fallback_to_random=True):
+    predefined_meals = ["Arrabiata", "Bolognese", "Taco", "Paella", "Ratatouille"]
+
+    for attempt in range(retries):
+        if category:
+            meal_name = random.choice(predefined_meals)
+            meal_details = get_meal_details(meal_name)
+            if meal_details:
+                return meal_details
+        print(f"Attempt {attempt + 1} for {category or 'Any'} failed.")
+    
+    if fallback_to_random:
+        random_meal_name = random.choice(predefined_meals)
+        print(f"Falling back to a random meal: {random_meal_name}.")
+        return get_meal_details(random_meal_name)
+    
+    print(f"Failed to retrieve a meal for category: {category or 'Any'} after {retries} attempts.")
+    return None
 
 def main():
     age = int(input("Enter your age: "))
@@ -107,14 +117,12 @@ def main():
     os.makedirs(folder_name, exist_ok=True)
 
     for meal, category in meal_plan.items():
-        meal_data = get_random_meal(category)
-        if meal_data:
-            meal_details = get_meal_details(meal_data['idMeal'])
-            if meal_details:
-                calories = simulate_calories(meal_details)
-                total_calories += calories
-                meal_details_list.append((meal, meal_details, calories))
-                save_meal_to_file(meal_details, f"{folder_name}/{meal}.txt")
+        meal_details = attempt_get_meal(category)
+        if meal_details:
+            calories = simulate_calories(meal_details)
+            total_calories += calories
+            meal_details_list.append((meal, meal_details, calories))
+            save_meal_to_file(meal_details, f"{folder_name}/{meal}.txt")
         else:
             print(f"Skipping {meal} due to lack of data.")
 
