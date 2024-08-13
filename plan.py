@@ -67,21 +67,31 @@ def save_meal_to_file(meal_details, file_name):
         file.write("\nInstructions:\n")
         file.write(meal_details['strInstructions'])
 
-def attempt_get_meal(category, retries=3, fallback_to_random=True):
-    predefined_meals = ["Arrabiata", "Bolognese", "Taco", "Paella", "Ratatouille"]
+def attempt_get_meal(category, retries=5, fallback_to_random=True):
+    predefined_meals = [
+        "Arrabiata", "Bolognese", "Taco", "Paella", "Ratatouille", "Beef Wellington", 
+        "Caesar Salad", "Chicken Alfredo", "Fish and Chips", "Lamb Chops", "Moussaka", 
+        "Pancakes", "Pizza", "Ramen", "Spaghetti Carbonara", "Vegetable Stir Fry", 
+        "Butter Chicken", "Ceviche", "Dumplings", "Fried Rice", "Goulash", "Jambalaya",
+        "Kebab", "Lasagna", "Meatballs", "Nachos", "Omelette", "Pad Thai", 
+        "Quesadilla", "Risotto", "Shepherd's Pie", "Sushi", "Tiramisu", "Udon", 
+        "Vindaloo", "Waffles", "Xiaolongbao", "Yakitori", "Zucchini Bread"
+    ]
 
     for attempt in range(retries):
-        if category:
-            meal_name = random.choice(predefined_meals)
-            meal_details = get_meal_details(meal_name)
-            if meal_details:
-                return meal_details
+        meal_name = random.choice(predefined_meals)
+        meal_details = get_meal_details(meal_name)
+        if meal_details:
+            return meal_details
+        else:
+            predefined_meals.remove(meal_name)  
+            if not predefined_meals:
+                break  
         print(f"Attempt {attempt + 1} for {category or 'Any'} failed.")
     
     if fallback_to_random:
-        random_meal_name = random.choice(predefined_meals)
-        print(f"Falling back to a random meal: {random_meal_name}.")
-        return get_meal_details(random_meal_name)
+        print("Fallback failed for all predefined meals.")
+        return None
     
     print(f"Failed to retrieve a meal for category: {category or 'Any'} after {retries} attempts.")
     return None
