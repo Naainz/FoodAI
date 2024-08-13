@@ -1,11 +1,3 @@
-Available Ingredients: Cabbage,  Eggs , Parsley
+Available Ingredients [FOUND BY AI]: bowl, dining table, carrot
 
-Found Recipes (8):
-- Ham hock colcannon [66%]
-- Rosół (Polish Chicken Soup) [66%]
-- Bitterballen (Dutch meatballs) [66%]
-- French Omelette [66%]
-- Kedgeree [66%]
-- Smoked Haddock Kedgeree [66%]
-- Spanish Tortilla [66%]
-- Turkey Meatloaf [66%]
+Found Recipes (0):
