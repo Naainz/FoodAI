@@ -32,6 +32,17 @@ food_items = {
     "spices", "honey", "jam", "syrup", "flour", "oil", "vinegar"
 }
 
+nutritional_db = {
+    "chicken": {"calories": 165, "protein": 31, "fat": 3.6, "carbs": 0},
+    "rice": {"calories": 130, "protein": 2.7, "fat": 0.3, "carbs": 28},
+    "butter": {"calories": 717, "protein": 0.85, "fat": 81, "carbs": 0.1},
+    "egg": {"calories": 155, "protein": 13, "fat": 11, "carbs": 1.1},
+    "flour": {"calories": 364, "protein": 10, "fat": 1, "carbs": 76},
+    "milk": {"calories": 42, "protein": 3.4, "fat": 1, "carbs": 5},
+    "sugar": {"calories": 387, "protein": 0, "fat": 0, "carbs": 100},
+    "salt": {"calories": 0, "protein": 0, "fat": 0, "carbs": 0},
+}
+
 def get_recipes_by_ingr(ingr):
     url = "https://www.themealdb.com/api/json/v1/1/filter.php"
     params = {'i': ingr}
@@ -84,10 +95,10 @@ def detect_ingredients(image_path):
 def get_recipe_details(recipe_name):
     url = "https://www.themealdb.com/api/json/v1/1/search.php"
     params = {'s': recipe_name}
-    res = requests.get(url, params=params)
-    if res.status_code == 200:
-        data = res.json()
-        if 'meals' in data and data['meals']:
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        if data['meals']:
             return data['meals'][0]
         else:
             return None
@@ -101,6 +112,15 @@ def check_allergens(ingredients):
             if allergen.lower() in ingredient.lower():
                 found_allergens.add(allergen)
     return found_allergens
+
+def calculate_nutrition(ingredients):
+    total_nutrition = {"calories": 0, "protein": 0, "fat": 0, "carbs": 0}
+    for ingredient in ingredients:
+        name = ingredient.lower()
+        if name in nutritional_db:
+            for key in total_nutrition:
+                total_nutrition[key] += nutritional_db[name][key]
+    return total_nutrition
 
 @app.route('/')
 def index():
@@ -149,6 +169,20 @@ def allergy():
             flash(f"No recipe found for '{recipe_name}'")
             return redirect(request.url)
     return render_template('allergy.html')
+
+@app.route('/nutrition', methods=['GET', 'POST'])
+def nutrition():
+    if request.method == 'POST':
+        recipe_name = request.form.get('recipe_name')
+        recipe_details = get_recipe_details(recipe_name)
+        if recipe_details:
+            ingredients = [recipe_details[f'strIngredient{i}'] for i in range(1, 21) if recipe_details[f'strIngredient{i}']]
+            nutrition = calculate_nutrition(ingredients)
+            return render_template('nutrition.html', recipe_name=recipe_name, nutrition=nutrition, ingredients=ingredients)
+        else:
+            flash(f"No recipe found for '{recipe_name}'")
+            return redirect(request.url)
+    return render_template('nutrition.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
