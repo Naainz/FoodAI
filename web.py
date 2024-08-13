@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import os
 import requests
+import random
+from datetime import datetime
 from ultralytics import YOLO
 from werkzeug.utils import secure_filename
 
@@ -43,84 +45,86 @@ nutritional_db = {
     "salt": {"calories": 0, "protein": 0, "fat": 0, "carbs": 0},
 }
 
-def get_recipes_by_ingr(ingr):
-    url = "https://www.themealdb.com/api/json/v1/1/filter.php"
-    params = {'i': ingr}
-    res = requests.get(url, params=params)
-    if res.status_code == 200:
-        data = res.json()
-        if 'meals' in data:
-            return data['meals']
-        else:
-            return None
+def calculate_bmr(age, height, weight, gender):
+    if gender.lower() == 'male':
+        bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age)
+    elif gender.lower() == 'female':
+        bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age)
     else:
-        return None
+        raise ValueError("Gender must be 'male' or 'female'")
+    return bmr
 
-def find_recipes(ingredients):
-    ingr_list = ingredients.split(',')
-    total_ingr = len(ingr_list)
-    found_recipes = {}
-    
-    for ingr in ingr_list:
-        meals = get_recipes_by_ingr(ingr.strip())
-        if meals:
-            for meal in meals:
-                if meal['strMeal'] in found_recipes:
-                    found_recipes[meal['strMeal']] += 1
-                else:
-                    found_recipes[meal['strMeal']] = 1
-    
-    recipes_to_output = {meal: int((count / total_ingr) * 100) for meal, count in found_recipes.items() if int((count / total_ingr) * 100) >= 50}
-    
-    return recipes_to_output
+def activity_multiplier(level):
+    if level == 1:
+        return 1.2
+    elif level == 2:
+        return 1.375
+    elif level == 3:
+        return 1.55
+    elif level == 4:
+        return 1.725
+    elif level == 5:
+        return 1.9
+    else:
+        raise ValueError("Activity level must be between 1 and 5")
 
-def detect_ingredients(image_path):
-    results = model(image_path)
-    detected_ingr = set()
-    for result in results:
-        for label in result.boxes.cls:
-            ingredient = result.names[int(label)]
-            if ingredient.lower() in food_items:
-                detected_ingr.add(ingredient)
-    
-    base_name = os.path.basename(image_path)
-    name, _ = os.path.splitext(base_name)
-    save_path = f"static/yolo/{name}.jpg"
-    
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    result.save(save_path)
-    
-    return list(detected_ingr), save_path
+def calculate_daily_calories(bmr, goal, activity_level):
+    tdee = bmr * activity_multiplier(activity_level)
+    if goal.lower() == 'gain':
+        return tdee + 500
+    elif goal.lower() == 'lose':
+        return tdee - 500
+    elif goal.lower() == 'maintain':
+        return tdee
+    else:
+        raise ValueError("Goal must be 'gain', 'lose', or 'maintain'")
 
-def get_recipe_details(recipe_name):
-    url = "https://www.themealdb.com/api/json/v1/1/search.php"
-    params = {'s': recipe_name}
-    response = requests.get(url, params=params)
+def get_meal_details(meal_name):
+    url = f"https://www.themealdb.com/api/json/v1/1/search.php?s={meal_name}"
+    response = requests.get(url)
     if response.status_code == 200:
-        data = response.json()
-        if data['meals']:
-            return data['meals'][0]
+        meals = response.json().get('meals')
+        if meals:
+            return meals[0]
         else:
+            print(f"No details found for meal: {meal_name}")
             return None
     else:
+        print(f"Failed to fetch details for meal name: {meal_name}. HTTP Status Code: {response.status_code}")
         return None
 
-def check_allergens(ingredients):
-    found_allergens = set()
-    for ingredient in ingredients:
-        for allergen in common_allergens:
-            if allergen.lower() in ingredient.lower():
-                found_allergens.add(allergen)
-    return found_allergens
+def simulate_calories(meal_details):
+    num_ingredients = sum(1 for i in range(1, 21) if meal_details[f'strIngredient{i}'])
+    return random.randint(200, 500) + (num_ingredients * 10)
 
-def calculate_nutrition(ingredients):
-    total_nutrition = {"calories": 0, "protein": 0, "fat": 0, "carbs": 0}
-    for ingredient in ingredients:
-        name = ingredient.lower()
-        if name in nutritional_db:
-            for key in total_nutrition:
-                total_nutrition[key] += nutritional_db[name][key]
-    return total_nutrition
+def attempt_get_meal(category, retries=5, fallback_to_random=True):
+    predefined_meals = [
+        "Arrabiata", "Bolognese", "Taco", "Paella", "Ratatouille", "Beef Wellington", 
+        "Caesar Salad", "Chicken Alfredo", "Fish and Chips", "Lamb Chops", "Moussaka", 
+        "Pancakes", "Pizza", "Ramen", "Spaghetti Carbonara", "Vegetable Stir Fry", 
+        "Butter Chicken", "Ceviche", "Dumplings", "Fried Rice", "Goulash", "Jambalaya",
+        "Kebab", "Lasagna", "Meatballs", "Nachos", "Omelette", "Pad Thai", 
+        "Quesadilla", "Risotto", "Shepherd's Pie", "Sushi", "Tiramisu", "Udon", 
+        "Vindaloo", "Waffles", "Xiaolongbao", "Yakitori", "Zucchini Bread"
+    ]
+
+    for attempt in range(retries):
+        meal_name = random.choice(predefined_meals)
+        meal_details = get_meal_details(meal_name)
+        if meal_details:
+            return meal_details
+        else:
+            predefined_meals.remove(meal_name)  
+            if not predefined_meals:
+                break  
+        print(f"Attempt {attempt + 1} for {category or 'Any'} failed.")
+    
+    if fallback_to_random:
+        print("Fallback failed for all predefined meals.")
+        return None
+    
+    print(f"Failed to retrieve a meal for category: {category or 'Any'} after {retries} attempts.")
+    return None
 
 @app.route('/')
 def index():
@@ -183,6 +187,50 @@ def nutrition():
             flash(f"No recipe found for '{recipe_name}'")
             return redirect(request.url)
     return render_template('nutrition.html')
+
+@app.route('/plan', methods=['GET', 'POST'])
+def plan():
+    if request.method == 'POST':
+        age = int(request.form.get('age'))
+        height = float(request.form.get('height'))
+        weight = float(request.form.get('weight'))
+        gender = request.form.get('gender')
+        goal = request.form.get('goal').strip().lower()
+        activity_level = int(request.form.get('activity_level'))
+
+        bmr = calculate_bmr(age, height, weight, gender)
+        daily_calories = calculate_daily_calories(bmr, goal, activity_level)
+        target_calories = daily_calories * 0.9  
+
+        meal_plan = {
+            "breakfast": "Breakfast",
+            "lunch": "Lunch",
+            "dinner": "Dinner",
+            "snack": "Dessert"  
+        }
+
+        total_calories = 0
+        meal_details_list = []
+
+        for meal, category in meal_plan.items():
+            meal_details = attempt_get_meal(category)
+            if meal_details:
+                calories = simulate_calories(meal_details)
+                total_calories += calories
+                meal_details_list.append((meal, meal_details['strMeal'], calories))
+            else:
+                print(f"Skipping {meal} due to lack of data.")
+
+        if total_calories > target_calories:
+            excess_calories = total_calories - target_calories
+            while excess_calories > 0 and meal_details_list:
+                meal, details, calories = meal_details_list.pop()
+                excess_calories -= calories
+                total_calories -= calories
+
+        return render_template('plan.html', meal_details_list=meal_details_list, total_calories=total_calories, target_calories=target_calories)
+
+    return render_template('plan.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
