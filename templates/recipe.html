@@ -10,12 +10,15 @@
 
 {% if ingredients is defined %}
     <h2>Recipe for '{{ recipe_name }}'</h2>
-    <p>Ingredients:</p>
-    <ul>
+    <div class="ingredients">
         {% for ingredient in ingredients %}
-        <li>{{ ingredient }}</li>
+        {% set ingredient_name = ingredient.split('(')[0].strip() %}
+        <div class="ingredient-card">
+            <img src="https://www.themealdb.com/images/ingredients/{{ ingredient_name }}-Small.png" alt="{{ ingredient_name }}">
+            <p>{{ ingredient }}</p>
+        </div>
         {% endfor %}
-    </ul>
+    </div>
     <p>Instructions:</p>
     <p>{{ instructions }}</p>
 {% endif %}

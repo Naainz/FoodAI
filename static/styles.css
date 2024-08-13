@@ -60,3 +60,30 @@ form button {
 form button:hover {
     background-color: #4cae4c;
 }
+
+.ingredients {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.ingredient-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    width: 120px;
+}
+
+.ingredient-card img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    margin-bottom: 10px;
+}
+
+.ingredient-card p {
+    font-size: 14px;
+    margin: 0;
+}
