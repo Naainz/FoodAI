@@ -9,26 +9,26 @@ def calculate_bmr(age, height, weight, gender):
 
 def activity_multiplier(level):
     if level == 1:
-        return 1.2  # sedentary
+        return 1.2  # sedentary 
     elif level == 2:
-        return 1.375  # lightly active
+        return 1.375  # low active
     elif level == 3:
-        return 1.55  # moderately active
+        return 1.55  # medium active
     elif level == 4:
         return 1.725  # very active
     elif level == 5:
-        return 1.9  # very very active
+        return 1.9  # very very active 
     else:
         raise ValueError("Activity level must be between 1 and 5")
 
 def calculate_daily_calories(bmr, goal, activity_level):
     tdee = bmr * activity_multiplier(activity_level)
     if goal.lower() == 'gain':
-        return tdee + 500 
+        return tdee + 500  # Surplus for weight gain
     elif goal.lower() == 'lose':
-        return tdee - 500 
+        return tdee - 500  # Deficit for weight loss
     elif goal.lower() == 'maintain':
-        return tdee  
+        return tdee  # No change
     else:
         raise ValueError("Goal must be 'gain', 'lose', or 'maintain'")
 
